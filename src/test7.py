@@ -194,11 +194,6 @@ def generate_sections_from_functionx_array(functionx_array,article_data):
 
 
 
-def create_article_data(Input):
-    prompt_parts = ["The user wants a presentation about " + Input]
-    response = model.generate_content(prompt_parts)
-    return response.text
-
 
 article_data = """
   <section class="docs-section" id="{last_module}">
@@ -211,40 +206,6 @@ article_data = """
   </section>  
 """
 
-import google.generativeai as genai
-genai.configure(api_key="AIzaSyBKQQq8CLYwz_1Hogh-cGvy5gqk8l5uU8k")
-import json
-# Set up the model
-generation_config = {
-  "temperature": 0.9,
-  "top_p": 1,
-  "top_k": 1,
-  "max_output_tokens": 2048,
-}
-
-safety_settings = [
-  {
-    "category": "HARM_CATEGORY_HARASSMENT",
-    "threshold": "BLOCK_MEDIUM_AND_ABOVE"
-  },
-  {
-    "category": "HARM_CATEGORY_HATE_SPEECH",
-    "threshold": "BLOCK_MEDIUM_AND_ABOVE"
-  },
-  {
-    "category": "HARM_CATEGORY_SEXUALLY_EXPLICIT",
-    "threshold": "BLOCK_MEDIUM_AND_ABOVE"
-  },
-  {
-    "category": "HARM_CATEGORY_DANGEROUS_CONTENT",
-    "threshold": "BLOCK_MEDIUM_AND_ABOVE"
-  },
-]
-
-model = genai.GenerativeModel(model_name="gemini-1.0-pro",
-                              generation_config=generation_config,
-                              safety_settings=safety_settings)
-
 
 
 def read_array_items(array):
@@ -256,6 +217,22 @@ def read_array_items(array):
             for module in modules:
                 print(item_name, module)
 
+
+def create_article(Input):
+    article_data = """
+      <section class="docs-section" id="{last_module}">
+        <h2 class="section-heading">{section_item}</h2>
+        <p>This is a new section added below the header.</p>
+        <h5>Github Code Example:</h5>
+        <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Illo, possimus quae error nulla et, distinctio facilis iusto consectetur ullam provident unde neque cumque obcaecati omnis ipsa corrupti magnam dolor minima.</p>
+        <h5>Highlight.js Example:</h5>
+        <p>Lorem ipsum dolor sit amet <a href="#">consectetur</a> adipisicing elit. Nihil laudantium ex quis. Velit ad quibusdam alias dolorum exercitationem molestiae, commodi repellat culpa soluta vitae? Incidunt ratione esse quisquam nam earum.</p>
+      </section>  
+    """
+    prompt_parts = [f"""You are An AI Expert on {Input}, start and end your code with <section class="docs-section" id="SEO OTPIMISED ID">,</section>your output is limited to html output not more than 500 words including code maximum 3000-4000 characters remmeber to end your code with </section> and start it with <section class="docs-section" id="SEO OTPIMISED ID">. HTML OUTPUT STRUCUTRE <section class="docs-section" id="SEO OTPIMISED ID"> you should start the html and end it with </section> . Do not try to give the complete html structure only this section.You can put code in <h5>Github Code Example:</h5> and it will look like code.DO NOT GIVE ANY OTHER HTML CODE. this is very short example you need to make a really really comprehsnisve module really long.{article_data} you have to write a complete module about {Input}, This is a complete module. No conculsion no ending as this is only a part of the topic.This is a major part of the course you need to make it as holistic as possible. do not include anything else than the {Input}.Keep it professional, crisp to the point and as accurate as possible. it should not be short.
+    """]
+    response = model.generate_content(prompt_parts)
+    return response.text
 
 def create_article_data(Input):
     prompt_parts = [f""" 
@@ -286,9 +263,6 @@ topics should be based on strategic learning so that at the end of the course th
     """]
     response = model.generate_content(prompt_parts)
     return response.text
-t = create_article_data("python")
-print(t)
-
 
 def parse_array(array_string):
     # Assuming array_string is a string representation of a list
@@ -300,10 +274,10 @@ def parse_array(array_string):
 
     return parsed_array
 
+t = create_article_data("python")
+print(t)
 functionx_array = parse_array(t)
 print(functionx_array)
-
-
 read_array_items(functionx_array)
 
 
@@ -324,8 +298,28 @@ for section_title, section_items in sections:
 reversed_articles = reversed(articles)
 
 # Insert articles below the comment in reverse order
+max_attempts = 10
+
 for article_id, article_content in reversed_articles:
-    weblink.insert_article_below_comment("<!-- add article below -->", article_content)
+    print("this is what we can use for article", article_id)
+    for attempt in range(1, max_attempts + 1):
+        try:
+            t = create_article(article_id)
+            weblink.insert_article_below_comment("<!-- add article below -->", t)
+            break  # If successful, break out of the retry loop
+        except Exception as e:
+            print(f"Attempt {attempt} failed:", str(e))
+            if attempt == max_attempts:
+                print("Max attempts reached. Returning error.")
+                # Handle error here if needed
+                break  # Max attempts reached, move to the next article
+            else:
+                print("Retrying...")
+                continue  # Retry the creation of the article
+
+    # Continue to the next iteration of the loop
+    continue
+
 
 
 
@@ -345,25 +339,4 @@ header_content = """
 """
 weblink.add_header(header_content)
 
-# article_content = """
-# <article class="docs-article" id="section-item-1.1">
-#   <header class="docs-header">
-#     <h1 class="docs-heading">Python <span class="docs-time">Secondary text</span></h1>
-#   </header>
-#   <section class="docs-section" id="item-python-1">
-#     <h2 class="section-heading">Section Item Python 1</h2>
-#     <p>This is a new section added below the header.</p>
-#      <h5>Github Code Example:</h5>
-#   <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Illo, possimus quae error nulla et, distinctio facilis iusto consectetur ullam provident unde neque cumque obcaecati omnis ipsa corrupti magnam dolor minima.</p>
-#   <h5>Highlight.js Example:</h5>
-#   <p>Lorem ipsum dolor sit amet <a href="#">consectetur</a> adipisicing elit. Nihil laudantium ex quis. Velit ad quibusdam alias dolorum exercitationem molestiae, commodi repellat culpa soluta vitae? Incidunt ratione esse quisquam nam earum.</p>
 
-#   </section>  
-# </article>
-# """
-
-# weblink.insert_article_below_comment("<!-- add article below -->", article_content)
-
-
-
-# Example usage
