@@ -1,0 +1,50 @@
+# Sample HTML file content
+file_content = """
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+  <div id="docs-sidebar" class="docs-sidebar">
+    <div class="top-search-box d-lg-none p-3">
+      <form class="search-form">
+        <input type="text" placeholder="Search the docs..." name="search" class="form-control search-input">
+        <button type="submit" class="btn search-btn" value="Search">
+          <i class="fas fa-search"></i>
+        </button>
+      </form>
+    </div>
+    <!-- nav here -->
+    <nav id="docs-nav" class="docs-nav navbar">
+      <ul class="section-items list-unstyled nav flex-column pb-3">
+        <li class="nav-item section-title">
+          <a class="nav-link scrollto" href="#section-1">Introduction</a>
+          <ul class="nav flex-column mt-2 lvl2">
+            <li class="nav-item">
+              <a class="nav-link scrollto" href="#item-1-1">Section Item 1.1</a>
+            </li>
+          </ul>
+        </li>
+      </ul>
+    </nav>
+    <!-- nav end -->
+  </div>
+</body>
+</html>
+"""
+
+# Use the file content variable with NavLinks
+nav_links = NavLinks(file_content)
+
+# Find the start and end indices of the navigation section
+start_index, end_index = nav_links.find_nav_start_and_end()
+print("Start Index:", start_index)
+print("End Index:", end_index)
+
+# Add a complete navigation section with an introduction and subsequent links
+nav_links.add_navigation("#section-2", "section-2", "New Introduction")
+nav_links.add("#item-2-1", "item-2-1", "New Section Item 2.1")
+nav_links.add("#item-2-2", "item-2-2", "New Section Item 2.2")
